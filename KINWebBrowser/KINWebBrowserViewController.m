@@ -508,8 +508,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     }
     if (URLForActivityItem) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            TUSafariActivity *safariActivity = [[TUSafariActivity alloc] init];
-            ARChromeActivity *chromeActivity = [[ARChromeActivity alloc] init];
             
             NSMutableArray *activities = [[NSMutableArray alloc] init];
             
@@ -524,8 +522,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
                 [activities addObject:chromeActivity];
             }
             
-            [activities addObject:safariActivity];
-            [activities addObject:chromeActivity];
             if(self.customActivityItems != nil) {
                 [activities addObjectsFromArray:self.customActivityItems];
             }
