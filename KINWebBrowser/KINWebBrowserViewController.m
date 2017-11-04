@@ -32,8 +32,12 @@
 
 #import "KINWebBrowserViewController.h"
 
-#import "TUSafariActivity.h"
-#import "ARChromeActivity.h"
+#if __has_include("TUSafariActivity.h")
+    #import "TUSafariActivity.h"
+#endif
+#if __has_include("ARChromeActivity.h")
+    #import "ARChromeActivity.h"
+#endif
 
 static void *KINWebBrowserContext = &KINWebBrowserContext;
 
@@ -504,6 +508,18 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
             ARChromeActivity *chromeActivity = [[ARChromeActivity alloc] init];
             
             NSMutableArray *activities = [[NSMutableArray alloc] init];
+            
+            Class TUSafariActivityClass = NSClassFromString(@"TUSafariActivity");
+            if (TUSafariActivityClass) {
+                id safariActivity = [[TUSafariActivityClass alloc] init];
+                [activities addObject:safariActivity];
+            }
+            Class ARChromeActivityClass = NSClassFromString(@"ARChromeActivity");
+            if (ARChromeActivityClass) {
+                id chromeActivity = [[ARChromeActivityClass alloc] init];
+                [activities addObject:chromeActivity];
+            }
+            
             [activities addObject:safariActivity];
             [activities addObject:chromeActivity];
             if(self.customActivityItems != nil) {
