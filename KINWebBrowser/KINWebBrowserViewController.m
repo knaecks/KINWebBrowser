@@ -98,6 +98,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
             else {
                 self.wkWebView = [[WKWebView alloc] init];
             }
+            self.wkWebView.allowsBackForwardNavigationGestures = true;
         }
         else {
             self.uiWebView = [[UIWebView alloc] init];
