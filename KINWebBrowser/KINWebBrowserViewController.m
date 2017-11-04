@@ -360,7 +360,16 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     
     NSArray *barButtonItems;
     if(self.wkWebView.loading || self.uiWebViewIsLoading) {
-        barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.stopButton, self.flexibleSeparator];
+        if(!self.actionButtonHidden) {
+            barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.stopButton];
+            NSMutableArray *mutableBarButtonItems = [NSMutableArray arrayWithArray:barButtonItems];
+            [mutableBarButtonItems addObject:self.flexibleSeparator];
+            [mutableBarButtonItems addObject:self.actionButton];
+            barButtonItems = [NSArray arrayWithArray:mutableBarButtonItems];
+        }
+        else {
+            barButtonItems = @[self.backButton, self.flexibleSeparator, self.stopButton, self.flexibleSeparator, self.forwardButton];
+        }
         
         if(self.showsURLInNavigationBar) {
             NSString *URLString;
@@ -378,7 +387,16 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         }
     }
     else {
-        barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.refreshButton, self.flexibleSeparator];
+        if(!self.actionButtonHidden) {
+            barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.refreshButton];
+            NSMutableArray *mutableBarButtonItems = [NSMutableArray arrayWithArray:barButtonItems];
+            [mutableBarButtonItems addObject:self.flexibleSeparator];
+            [mutableBarButtonItems addObject:self.actionButton];
+            barButtonItems = [NSArray arrayWithArray:mutableBarButtonItems];
+        }
+        else {
+            barButtonItems = @[self.backButton, self.flexibleSeparator, self.refreshButton, self.flexibleSeparator, self.forwardButton];
+        }
         
         if(self.showsPageTitleInNavigationBar) {
             if(self.wkWebView) {
