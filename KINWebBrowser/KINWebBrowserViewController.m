@@ -322,6 +322,10 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     if(webView == self.wkWebView) {
+        if ( [self.delegate respondsToSelector:@selector(webBrowser:decidePolicyForNavigationAction:decisionHandler:)]
+            && [self.delegate webBrowser:self decidePolicyForNavigationAction:navigationAction decisionHandler:decisionHandler] ) {
+            return;
+        }
         
         NSURL *URL = navigationAction.request.URL;
         if(![self externalAppRequiredToOpenURL:URL]) {

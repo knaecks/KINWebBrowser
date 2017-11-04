@@ -55,6 +55,9 @@
 - (void)webBrowser:(KINWebBrowserViewController *)webBrowser didFinishLoadingURL:(NSURL *)URL;
 - (void)webBrowser:(KINWebBrowserViewController *)webBrowser didFailToLoadURL:(NSURL *)URL error:(NSError *)error;
 - (void)webBrowserViewControllerWillDismiss:(KINWebBrowserViewController*)viewController;
+    
+// Return YES if delegate will handle deciding policy. If YES, delegate must call decisionHandler. Otherwise, it must not call decisionHandler.
+- (BOOL) webBrowser:(KINWebBrowserViewController *)webBrowser decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler;
 @end
 
 
