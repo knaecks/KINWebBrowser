@@ -40,7 +40,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 @interface KINWebBrowserViewController () <UIAlertViewDelegate>
 
 @property (nonatomic, assign) BOOL previousNavigationControllerToolbarHidden, previousNavigationControllerNavigationBarHidden;
-@property (nonatomic, strong) UIBarButtonItem *backButton, *forwardButton, *refreshButton, *stopButton, *fixedSeparator, *flexibleSeparator;
+@property (nonatomic, strong) UIBarButtonItem *backButton, *forwardButton, *refreshButton, *stopButton, *flexibleSeparator;
 @property (nonatomic, strong) NSTimer *fakeProgressTimer;
 @property (nonatomic, strong) UIPopoverController *actionPopoverController;
 @property (nonatomic, assign) BOOL uiWebViewIsLoading;
@@ -360,7 +360,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     
     NSArray *barButtonItems;
     if(self.wkWebView.loading || self.uiWebViewIsLoading) {
-        barButtonItems = @[self.backButton, self.fixedSeparator, self.forwardButton, self.fixedSeparator, self.stopButton, self.flexibleSeparator];
+        barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.stopButton, self.flexibleSeparator];
         
         if(self.showsURLInNavigationBar) {
             NSString *URLString;
@@ -378,7 +378,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         }
     }
     else {
-        barButtonItems = @[self.backButton, self.fixedSeparator, self.forwardButton, self.fixedSeparator, self.refreshButton, self.flexibleSeparator];
+        barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.refreshButton, self.flexibleSeparator];
         
         if(self.showsPageTitleInNavigationBar) {
             if(self.wkWebView) {
@@ -416,8 +416,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     UIImage *forwardbuttonImage = [UIImage imageWithContentsOfFile: [bundle pathForResource:@"forwardbutton" ofType:@"png"]];
     self.forwardButton = [[UIBarButtonItem alloc] initWithImage:forwardbuttonImage style:UIBarButtonItemStylePlain target:self action:@selector(forwardButtonPressed:)];
     self.actionButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(actionButtonPressed:)];
-    self.fixedSeparator = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    self.fixedSeparator.width = 50.0f;
     self.flexibleSeparator = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 }
 
