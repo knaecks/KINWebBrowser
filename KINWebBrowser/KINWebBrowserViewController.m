@@ -33,10 +33,10 @@
 #import "KINWebBrowserViewController.h"
 
 #if __has_include("TUSafariActivity.h")
-    #import "TUSafariActivity.h"
+#import "TUSafariActivity.h"
 #endif
 #if __has_include("ARChromeActivity.h")
-    #import "ARChromeActivity.h"
+#import "ARChromeActivity.h"
 #endif
 
 static void *KINWebBrowserContext = &KINWebBrowserContext;
@@ -47,8 +47,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 @property (nonatomic, strong) UIBarButtonItem *backButton, *forwardButton, *refreshButton, *stopButton, *flexibleSeparator;
 @property (nonatomic, strong) NSTimer *fakeProgressTimer;
 @property (nonatomic, strong) UIPopoverController *actionPopoverController;
-@property (nonatomic, assign) BOOL uiWebViewIsLoading;
-@property (nonatomic, strong) NSURL *uiWebViewCurrentURL;
 @property (nonatomic, strong) NSURL *URLToLaunchWithPermission;
 @property (nonatomic, strong) UIAlertView *externalAppPermissionAlertView;
 
@@ -95,18 +93,13 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 - (id)initWithConfiguration:(WKWebViewConfiguration *)configuration {
     self = [super init];
     if(self) {
-        if([WKWebView class]) {
-            if(configuration) {
-                self.wkWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
-            }
-            else {
-                self.wkWebView = [[WKWebView alloc] init];
-            }
-            self.wkWebView.allowsBackForwardNavigationGestures = true;
+        if(configuration) {
+            self.wkWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
         }
         else {
-            self.uiWebView = [[UIWebView alloc] init];
+            self.wkWebView = [[WKWebView alloc] init];
         }
+        self.wkWebView.allowsBackForwardNavigationGestures = true;
         
         self.actionButtonHidden = NO;
         self.showsURLInNavigationBar = NO;
@@ -126,29 +119,16 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     self.previousNavigationControllerToolbarHidden = self.navigationController.toolbarHidden;
     self.previousNavigationControllerNavigationBarHidden = self.navigationController.navigationBarHidden;
     
-    if(self.wkWebView) {
-        [self.wkWebView setFrame:self.view.bounds];
-        [self.wkWebView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-        [self.wkWebView setNavigationDelegate:self];
-        [self.wkWebView setUIDelegate:self];
-        [self.wkWebView setMultipleTouchEnabled:YES];
-        [self.wkWebView setAutoresizesSubviews:YES];
-        [self.wkWebView.scrollView setAlwaysBounceVertical:YES];
-        [self.view addSubview:self.wkWebView];
-        
-        [self.wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:0 context:KINWebBrowserContext];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView setFrame:self.view.bounds];
-        [self.uiWebView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-        [self.uiWebView setDelegate:self];
-        [self.uiWebView setMultipleTouchEnabled:YES];
-        [self.uiWebView setAutoresizesSubviews:YES];
-        [self.uiWebView setScalesPageToFit:YES];
-        [self.uiWebView.scrollView setAlwaysBounceVertical:YES];
-        [self.view addSubview:self.uiWebView];
-    }
+    [self.wkWebView setFrame:self.view.bounds];
+    [self.wkWebView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+    [self.wkWebView setNavigationDelegate:self];
+    [self.wkWebView setUIDelegate:self];
+    [self.wkWebView setMultipleTouchEnabled:YES];
+    [self.wkWebView setAutoresizesSubviews:YES];
+    [self.wkWebView.scrollView setAlwaysBounceVertical:YES];
+    [self.view addSubview:self.wkWebView];
     
+    [self.wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:0 context:KINWebBrowserContext];
     
     self.progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
     [self.progressView setTrackTintColor:[UIColor colorWithWhite:1.0f alpha:0.0f]];
@@ -171,22 +151,15 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     [super viewWillDisappear:animated];
     
     [self.navigationController setNavigationBarHidden:self.previousNavigationControllerNavigationBarHidden animated:animated];
-    
     [self.navigationController setToolbarHidden:self.previousNavigationControllerToolbarHidden animated:animated];
     
-    [self.uiWebView setDelegate:nil];
     [self.progressView removeFromSuperview];
 }
 
 #pragma mark - Public Interface
 
 - (void)loadRequest:(NSURLRequest *)request {
-    if(self.wkWebView) {
-        [self.wkWebView loadRequest:request];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView loadRequest:request];
-    }
+    [self.wkWebView loadRequest:request];
 }
 
 - (void)loadURL:(NSURL *)URL {
@@ -199,12 +172,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 }
 
 - (void)loadHTMLString:(NSString *)HTMLString {
-    if(self.wkWebView) {
-        [self.wkWebView loadHTMLString:HTMLString baseURL:nil];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView loadHTMLString:HTMLString baseURL:nil];
-    }
+    [self.wkWebView loadHTMLString:HTMLString baseURL:nil];
 }
 
 - (void)setTintColor:(UIColor *)tintColor {
@@ -223,61 +191,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 - (void)setActionButtonHidden:(BOOL)actionButtonHidden {
     _actionButtonHidden = actionButtonHidden;
     [self updateToolbarState];
-}
-
-
-#pragma mark - UIWebViewDelegate
-
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
-    if(webView == self.uiWebView) {
-        
-        if(![self externalAppRequiredToOpenURL:request.URL]) {
-            self.uiWebViewCurrentURL = request.URL;
-            self.uiWebViewIsLoading = YES;
-            [self updateToolbarState];
-            
-            [self fakeProgressViewStartLoading];
-            
-            if([self.delegate respondsToSelector:@selector(webBrowser:didStartLoadingURL:)]) {
-                [self.delegate webBrowser:self didStartLoadingURL:request.URL];
-            }
-            return YES;
-        }
-        else {
-            [self launchExternalAppWithURL:request.URL];
-            return NO;
-        }
-    }
-    return NO;
-}
-
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
-    if(webView == self.uiWebView) {
-        if(!self.uiWebView.isLoading) {
-            self.uiWebViewIsLoading = NO;
-            [self updateToolbarState];
-            
-            [self fakeProgressBarStopLoading];
-        }
-        
-        if([self.delegate respondsToSelector:@selector(webBrowser:didFinishLoadingURL:)]) {
-            [self.delegate webBrowser:self didFinishLoadingURL:self.uiWebView.request.URL];
-        }
-    }
-}
-
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
-    if(webView == self.uiWebView) {
-        if(!self.uiWebView.isLoading) {
-            self.uiWebViewIsLoading = NO;
-            [self updateToolbarState];
-            
-            [self fakeProgressBarStopLoading];
-        }
-        if([self.delegate respondsToSelector:@selector(webBrowser:didFailToLoadURL:error:)]) {
-            [self.delegate webBrowser:self didFailToLoadURL:self.uiWebView.request.URL error:error];
-        }
-    }
 }
 
 #pragma mark - WKNavigationDelegate
@@ -356,19 +269,15 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 #pragma mark - Toolbar State
 
 - (void)updateToolbarState {
-    
-    BOOL canGoBack = self.wkWebView.canGoBack || self.uiWebView.canGoBack;
-    BOOL canGoForward = self.wkWebView.canGoForward || self.uiWebView.canGoForward;
-    
-    [self.backButton setEnabled:canGoBack];
-    [self.forwardButton setEnabled:canGoForward];
+    [self.backButton setEnabled:self.wkWebView.canGoBack];
+    [self.forwardButton setEnabled:self.wkWebView.canGoForward];
     
     if(!self.backButton) {
         [self setupToolbarItems];
     }
     
     NSArray *barButtonItems;
-    if(self.wkWebView.loading || self.uiWebViewIsLoading) {
+    if(self.wkWebView.loading) {
         if(!self.actionButtonHidden) {
             barButtonItems = @[self.backButton, self.flexibleSeparator, self.forwardButton, self.flexibleSeparator, self.stopButton];
             NSMutableArray *mutableBarButtonItems = [NSMutableArray arrayWithArray:barButtonItems];
@@ -381,14 +290,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         }
         
         if(self.showsURLInNavigationBar) {
-            NSString *URLString;
-            if(self.wkWebView) {
-                URLString = [self.wkWebView.URL absoluteString];
-            }
-            else if(self.uiWebView) {
-                URLString = [self.uiWebViewCurrentURL absoluteString];
-            }
-            
+            NSString *URLString  = [self.wkWebView.URL absoluteString];
             URLString = [URLString stringByReplacingOccurrencesOfString:@"http://" withString:@""];
             URLString = [URLString stringByReplacingOccurrencesOfString:@"https://" withString:@""];
             URLString = [URLString substringToIndex:[URLString length]-1];
@@ -408,12 +310,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         }
         
         if(self.showsPageTitleInNavigationBar) {
-            if(self.wkWebView) {
-                self.navigationItem.title = self.wkWebView.title;
-            }
-            else if(self.uiWebView) {
-                self.navigationItem.title = [self.uiWebView stringByEvaluatingJavaScriptFromString:@"document.title"];
-            }
+            self.navigationItem.title = self.wkWebView.title;
         }
     }
     
@@ -455,57 +352,27 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 #pragma mark - UIBarButtonItem Target Action Methods
 
 - (void)backButtonPressed:(id)sender {
-    
-    if(self.wkWebView) {
-        [self.wkWebView goBack];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView goBack];
-    }
+    [self.wkWebView goBack];
     [self updateToolbarState];
 }
 
 - (void)forwardButtonPressed:(id)sender {
-    if(self.wkWebView) {
-        [self.wkWebView goForward];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView goForward];
-    }
+    [self.wkWebView goForward];
     [self updateToolbarState];
 }
 
 - (void)refreshButtonPressed:(id)sender {
-    if(self.wkWebView) {
-        [self.wkWebView stopLoading];
-        [self.wkWebView reload];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView stopLoading];
-        [self.uiWebView reload];
-    }
+    [self.wkWebView stopLoading];
+    [self.wkWebView reload];
 }
 
 - (void)stopButtonPressed:(id)sender {
-    if(self.wkWebView) {
-        [self.wkWebView stopLoading];
-    }
-    else if(self.uiWebView) {
-        [self.uiWebView stopLoading];
-    }
+    [self.wkWebView stopLoading];
 }
 
 - (void)actionButtonPressed:(id)sender {
-    NSURL *URLForActivityItem;
-    NSString *URLTitle;
-    if(self.wkWebView) {
-        URLForActivityItem = self.wkWebView.URL;
-        URLTitle = self.wkWebView.title;
-    }
-    else if(self.uiWebView) {
-        URLForActivityItem = self.uiWebView.request.URL;
-        URLTitle = [self.uiWebView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    }
+    NSURL *URLForActivityItem = self.wkWebView.URL;
+    NSString *URLTitle = self.wkWebView.title;
     if (URLForActivityItem) {
         dispatch_async(dispatch_get_main_queue(), ^{
             
@@ -542,7 +409,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     }
 }
 
-
 #pragma mark - Estimated Progress KVO (WKWebView)
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -564,7 +430,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
 }
-
 
 #pragma mark - Fake Progress Bar Control (UIWebView)
 
@@ -594,12 +459,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 
 - (void)fakeProgressTimerDidFire:(id)sender {
     CGFloat increment = 0.005/(self.progressView.progress + 0.2);
-    if([self.uiWebView isLoading]) {
-        CGFloat progress = (self.progressView.progress < 0.75f) ? self.progressView.progress + increment : self.progressView.progress + 0.0005;
-        if(self.progressView.progress < 0.95) {
-            [self.progressView setProgress:progress animated:YES];
-        }
-    }
 }
 
 #pragma mark - External App Support
@@ -614,7 +473,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     if (![self.externalAppPermissionAlertView isVisible]) {
         [self.externalAppPermissionAlertView show];
     }
-
+    
 }
 
 #pragma mark - UIAlertViewDelegate
@@ -650,15 +509,12 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 #pragma mark - Dealloc
 
 - (void)dealloc {
-    [self.uiWebView setDelegate:nil];
-    
     [self.wkWebView setNavigationDelegate:nil];
     [self.wkWebView setUIDelegate:nil];
     if ([self isViewLoaded]) {
         [self.wkWebView removeObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
     }
 }
-
 
 @end
 
