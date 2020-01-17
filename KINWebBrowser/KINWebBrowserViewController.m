@@ -45,7 +45,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 
 @property (nonatomic, assign) BOOL previousNavigationControllerToolbarHidden, previousNavigationControllerNavigationBarHidden;
 @property (nonatomic, strong) UIBarButtonItem *backButton, *forwardButton, *refreshButton, *stopButton, *flexibleSeparator;
-@property (nonatomic, strong) NSTimer *fakeProgressTimer;
 @property (nonatomic, strong) UIPopoverController *actionPopoverController;
 @property (nonatomic, strong) NSURL *URLToLaunchWithPermission;
 @property (nonatomic, strong) UIAlertView *externalAppPermissionAlertView;
@@ -429,36 +428,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
     else {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
-}
-
-#pragma mark - Fake Progress Bar Control (UIWebView)
-
-- (void)fakeProgressViewStartLoading {
-    [self.progressView setProgress:0.0f animated:NO];
-    [self.progressView setAlpha:1.0f];
-    
-    if(!self.fakeProgressTimer) {
-        self.fakeProgressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f/60.0f target:self selector:@selector(fakeProgressTimerDidFire:) userInfo:nil repeats:YES];
-    }
-}
-
-- (void)fakeProgressBarStopLoading {
-    if(self.fakeProgressTimer) {
-        [self.fakeProgressTimer invalidate];
-    }
-    
-    if(self.progressView) {
-        [self.progressView setProgress:1.0f animated:YES];
-        [UIView animateWithDuration:0.3f delay:0.3f options:UIViewAnimationOptionCurveEaseOut animations:^{
-            [self.progressView setAlpha:0.0f];
-        } completion:^(BOOL finished) {
-            [self.progressView setProgress:0.0f animated:NO];
-        }];
-    }
-}
-
-- (void)fakeProgressTimerDidFire:(id)sender {
-    CGFloat increment = 0.005/(self.progressView.progress + 0.2);
 }
 
 #pragma mark - External App Support
