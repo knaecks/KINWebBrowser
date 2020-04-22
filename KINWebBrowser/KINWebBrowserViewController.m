@@ -66,7 +66,7 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 }
 
 + (UINavigationController *)navigationControllerWithWebBrowser {
-    KINWebBrowserViewController *webBrowserViewController = [[self alloc] initWithConfiguration:nil];
+    KINWebBrowserViewController *webBrowserViewController = [[self alloc] initWithConfiguration:[WKWebViewConfiguration new]];
     return [KINWebBrowserViewController navigationControllerWithBrowser:webBrowserViewController];
 }
 
