@@ -371,7 +371,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
 
 - (void)actionButtonPressed:(id)sender {
     NSURL *URLForActivityItem = self.wkWebView.URL;
-    NSString *URLTitle = self.wkWebView.title;
     if (URLForActivityItem) {
         dispatch_async(dispatch_get_main_queue(), ^{
             
