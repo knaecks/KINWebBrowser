@@ -313,12 +313,6 @@ static void *KINWebBrowserContext = &KINWebBrowserContext;
         }
     }
     
-    if(!self.actionButtonHidden) {
-        NSMutableArray *mutableBarButtonItems = [NSMutableArray arrayWithArray:barButtonItems];
-        [mutableBarButtonItems addObject:self.actionButton];
-        barButtonItems = [NSArray arrayWithArray:mutableBarButtonItems];
-    }
-    
     [self setToolbarItems:barButtonItems animated:YES];
     
     self.tintColor = self.tintColor;
